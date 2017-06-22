@@ -3,4 +3,4 @@ graphDB is primarily a database abstraction layer that behaves as a graph databa
 
 What this library does is that it creates some tables in the MySQL database and stores all the graph data in those 3 tables. At present, it is designed to be used in a procedural manner but soon I'll try to code the object oriented part in it as well.
 
-Head over to the wiki section to see the complete documentation.
+Head over to the [wiki section](https://github.com/apoorvasingh157/graphDB/wiki) to see the complete documentation.
