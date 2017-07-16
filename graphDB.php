@@ -11,168 +11,6 @@ date_default_timezone_set('Asia/Kolkata');
 
 
 
-/*
-Creates new entity with the given name
-*/
-function createNewEntity($conn,$name)
-{
-	$name = mysqli_real_escape_string($conn,$name);
-	$sql = 'INSERT INTO graphdb_entities(name) VALUES("'.$name.'");';
-	if($conn->query($sql)===True){
-		return "ok";
-	}
-	else {
-		return "Error in creating new entity : " . $conn->error;
-	}
-}
-
-
-/*
-Creates a label for the entity with the given id
-*/
-function setLabelForEntity($conn,$id,$label)
-{
-	$label = mysqli_real_escape_string($conn,$label);
-	$time = date('Y-m-d H:i:s', time());
-	$sql = 'INSERT INTO graphdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$id.',"","'.$label.'","l","'.$time.'");';
-	if($conn->query($sql)===True){
-		return "ok";
-	}
-	else {
-		return "Error in setting label for entity : ".$conn->error;
-	}
-}
-
-
-/*
-sets the property of the entity using the id provided
-*/
-function setEntityProperty($conn,$id,$key,$value) 
-{
-	$key = mysqli_real_escape_string($conn,$key);
-	$value = mysqli_real_escape_string($conn,$value);
-	$time = date('Y-m-d H:i:s', time());
-	$sql = 'INSERT INTO graphdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$id.',"'.$key.'","'.$value.'","p","'.$time.'");';
-	if($conn->query($sql)===True) {
-		return "ok";
-	}
-	else {
-		return "Error in setting the entity for property : ".$conn->error;
-	}
-}
-
-
-/*
-For setting the relationship label between two given
-entities.
-*/
-function setEntityRelationLabel($conn,$e1_id,$e2_id,$label)
-{
-	$label = mysqli_real_escape_string($conn,$label);
-	$time = date('Y-m-d H:i:s', time());
-	$sql = 'INSERT INTO graphdb_relations(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$e1_id.','.$e2_id.',"","'.$label.'","l","'.$time.'");';
-	if($conn->query($sql)) {
-		return "ok";
-	}
-	else {
-		return "Error in setting entity relation label : ".$conn->error;
-	}
-}
-
-
-/*
-Sets the key:value pair for a relation existing between two entities
-*/
-function setEntityRelationProperty($conn,$e1_id,$e2_id,$key,$value)
-{
-	$label = mysqli_real_escape_string($conn,$label);
-	$time = date('Y-m-d H:i:s', time());
-	$sql = 'INSERT INTO graphdb_relations(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$e1_id.','.$e2_id.',"'.$key.'","'.$value.'","p","'.$time.'");';
-	if($conn->query($sql)) {
-		return "ok";
-	}
-	else {
-		return "Error in setting entity relation label : ".$conn->error;
-	}
-}
-
-
-/*
-Gets the id for an entity by names
-*/
-function getIDByName($conn,$name) {
-	$name = mysqli_real_escape_string($conn,$name);
-	$sql = 'SELECT id FROM graphdb_entities WHERE name="'.$name.'";';
-	$result = $conn->query($sql);
-	$ids = [];
-	while ($data = $result->fetch_assoc()) {
-		array_push($ids,$data['id']);
-	}
-	return $ids;
-}
-
-
-/*
-For getting the labels associated with a given entity. The 
-entity is retrived by the given id.
-*/
-function getEntityLabels($conn,$id)
-{
-	$sql = 'SELECT prop_value from graphdb_properties WHERE prop_type="l" AND e_id="'.$id.'";';
-	$result = $conn->query($sql);
-	$labels = [];
-	while ($data = $result->fetch_assoc()) {
-		array_push($labels, $data['prop_value']);
-	}
-	return $labels;
-}
-
-
-/*
-For getting entity's name by id
-*/
-function getEntityName($conn,$id)
-{
-	$sql = 'SELECT name from graphdb_entities WHERE id='.$id.';';
-	$result = $conn->query($sql);
-	$data = $result->fetch_assoc();
-	var_dump($data);
-	return $data['name'];
-}
-
-
-/*
-For getting all the properties of an entity by id
-*/
-function getAllProperties($conn,$id)
-{
-	$sql = 'SELECT prop_name,prop_value FROM graphdb_properties WHERE prop_type="p" AND e_id="'.$id.'";';
-	$result = $conn->query($sql);
-	$properties = array();
-	while ($data = $result->fetch_assoc()) {
-		$properties[$data['prop_name']] = $data['prop_value'];
-	}
-	return $properties;
-}
-
-
-/*
-For getting the list of properties that a relation has
-*/
-function getRelationProperty($conn,$e1_id,$e2_id)
-{
-	$e1_id = (int)$e1_id;
-	$e2_id = (int)$e2_id;
-	$sql = 'SELECT rel_name,rel_value FROM graphdb_relations WHERE rel_type="p" AND e1_id='.$e1_id.' AND e2_id='.$e2_id.';';
-	$result = $conn->query($sql);
-	$properties = array();
-	while ($data = $result->fetch_assoc()) {
-		$properties[$data['rel_name']] = $data['rel_value'];
-	}
-	return $properties;
-}
-
-
 /**
 * Obejct oriented implementation of GraphDB
 */
@@ -234,8 +72,7 @@ class GraphDB
 	/*
 	* Constructor method
 	*/
-	function __construct($conn)
-	{
+	function __construct($conn) {
 		$this->conn = $conn;
 		$this->setupTables($conn);
 	}
@@ -258,11 +95,12 @@ class GraphDB
 	}
 
 
+
 	/*
 	Creates a label for the entity with the given id
 	*/
-	public function setLabelForEntity($conn,$id,$label)
-	{
+	public function setLabelForEntity($id,$label) {
+		$conn = $this->conn;
 		$label = mysqli_real_escape_string($conn,$label);
 		$time = date('Y-m-d H:i:s', time());
 		$sql = 'INSERT INTO graphdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$id.',"","'.$label.'","l","'.$time.'");';
@@ -274,11 +112,13 @@ class GraphDB
 		}
 	}
 
+
+
 	/*
 	sets the property of the entity using the id provided
 	*/
-	public function setEntityProperty($conn,$id,$key,$value) 
-	{
+	public function setEntityProperty($id,$key,$value) {
+		$conn = $this->conn;
 		$key = mysqli_real_escape_string($conn,$key);
 		$value = mysqli_real_escape_string($conn,$value);
 		$time = date('Y-m-d H:i:s', time());
@@ -297,8 +137,8 @@ class GraphDB
 	For setting the relationship label between two given
 	entities.
 	*/
-	public function setEntityRelationLabel($conn,$e1_id,$e2_id,$label)
-	{
+	public function setEntityRelationLabel($e1_id,$e2_id,$label) {
+		$conn = $this->conn;
 		$label = mysqli_real_escape_string($conn,$label);
 		$time = date('Y-m-d H:i:s', time());
 		$sql = 'INSERT INTO graphdb_relations(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$e1_id.','.$e2_id.',"","'.$label.'","l","'.$time.'");';
@@ -314,8 +154,8 @@ class GraphDB
 	/*
 	Sets the key:value pair for a relation existing between two entities
 	*/
-	public function setEntityRelationProperty($conn,$e1_id,$e2_id,$key,$value)
-	{
+	public function setEntityRelationProperty($e1_id,$e2_id,$key,$value) {
+		$conn = $this->conn;
 		$label = mysqli_real_escape_string($conn,$label);
 		$time = date('Y-m-d H:i:s', time());
 		$sql = 'INSERT INTO graphdb_relations(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$e1_id.','.$e2_id.',"'.$key.'","'.$value.'","p","'.$time.'");';
@@ -331,7 +171,8 @@ class GraphDB
 	/*
 	Gets the id for an entity by names
 	*/
-	public function getIDByName($conn,$name) {
+	public function getIDByName($name) {
+		$conn = $this->conn;
 		$name = mysqli_real_escape_string($conn,$name);
 		$sql = 'SELECT id FROM graphdb_entities WHERE name="'.$name.'";';
 		$result = $conn->query($sql);
@@ -347,8 +188,8 @@ class GraphDB
 	For getting the labels associated with a given entity. The 
 	entity is retrived by the given id.
 	*/
-	public function getEntityLabels($conn,$id)
-	{
+	public function getEntityLabels($id) {
+		$conn = $this->conn;
 		$sql = 'SELECT prop_value from graphdb_properties WHERE prop_type="l" AND e_id="'.$id.'";';
 		$result = $conn->query($sql);
 		$labels = [];
@@ -362,8 +203,8 @@ class GraphDB
 	/*
 	For getting entity's name by id
 	*/
-	public function getEntityName($conn,$id)
-	{
+	public function getEntityName($id) {
+		$conn = $this->conn;
 		$sql = 'SELECT name from graphdb_entities WHERE id='.$id.';';
 		$result = $conn->query($sql);
 		$data = $result->fetch_assoc();
@@ -375,8 +216,8 @@ class GraphDB
 	/*
 	For getting all the properties of an entity by id
 	*/
-	public function getAllProperties($conn,$id)
-	{
+	public function getAllProperties($id) {
+		$conn = $this->conn;
 		$sql = 'SELECT prop_name,prop_value FROM graphdb_properties WHERE prop_type="p" AND e_id="'.$id.'";';
 		$result = $conn->query($sql);
 		$properties = array();
@@ -390,8 +231,8 @@ class GraphDB
 	/*
 	For getting the list of properties that a relation has
 	*/
-	public function getRelationProperty($conn,$e1_id,$e2_id)
-	{
+	public function getRelationProperty($e1_id,$e2_id) {
+		$conn = $this->conn;
 		$e1_id = (int)$e1_id;
 		$e2_id = (int)$e2_id;
 		$sql = 'SELECT rel_name,rel_value FROM graphdb_relations WHERE rel_type="p" AND e1_id='.$e1_id.' AND e2_id='.$e2_id.';';
