@@ -5,11 +5,12 @@
 This module will allow keeping Graph data in a MySQL database
 */
 
+require __DIR__ . '/vendor/autoload.php';
+use Hashids\Hashids;
 
-// Setting the default timezone
 date_default_timezone_set('Asia/Kolkata');
 
-
+$GLOBALS['HASHID_SALT'] = "MaceHub is the best";
 
 /**
 * Obejct oriented implementation of GraphDB
@@ -89,12 +90,16 @@ class GraphDB {
 	/*
 	Creates new entity with the given name
 	*/
-	public function createNode($name) {
+	public function createNode() {
 		$conn = $this->conn;
-		$name = mysqli_real_escape_string($conn,$name);
-		$sql = 'INSERT INTO graphdb_entities(name) VALUES("'.$name.'");';
+		$this->numOfNodes = $this->numOfNodes + 1;
+		// Generating the node's hashid
+		$hashids = new Hashids($GLOBALS['HASHID_SALT'], 6);	// 6 characters give us the power to express 56.8 billion entities uniquely.
+		$hashid = $hashids->encode($this->numOfNodes);
+
+		$hashid = mysqli_real_escape_string($conn,$hashid);
+		$sql = 'INSERT INTO graphdb_entities(name) VALUES("'.$hashid.'");';
 		if($conn->query($sql)===True){
-			$this->numOfNodes = $this->numOfNodes + 1;
 			return "ok";
 		}
 		else {
