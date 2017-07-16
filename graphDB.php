@@ -14,8 +14,11 @@ date_default_timezone_set('Asia/Kolkata');
 /**
 * Obejct oriented implementation of GraphDB
 */
-class GraphDB
-{
+class GraphDB {
+
+	public $numOfNodes;
+
+
 	/*
 	* Private method that deals with the creation of tables
 	* in a mysql database
@@ -67,7 +70,6 @@ class GraphDB
 		}
 	}
 
-	
 
 	/*
 	* Constructor method
@@ -75,6 +77,11 @@ class GraphDB
 	function __construct($conn) {
 		$this->conn = $conn;
 		$this->setupTables($conn);
+		
+		// Counting no. of nodes
+		$sql = 'SELECT * FROM graphdb_entities;';
+		$result = $this->conn->query($sql);
+		$this->numOfNodes = intval($result->num_rows);
 	}
 
 	
@@ -87,6 +94,7 @@ class GraphDB
 		$name = mysqli_real_escape_string($conn,$name);
 		$sql = 'INSERT INTO graphdb_entities(name) VALUES("'.$name.'");';
 		if($conn->query($sql)===True){
+			$this->numOfNodes = $this->numOfNodes + 1;
 			return "ok";
 		}
 		else {
