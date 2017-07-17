@@ -20,14 +20,54 @@ $GLOBALS['HASHID_SALT'] = "MaceHub is the best";
 */
 class Node
 {
-	
-	function __construct() {
-		// Nothing to execute yet
+
+	function __construct($conn,$id) 
+	{
+		$this->conn = $conn;
+		$this->ID = $id;
+
+		// Finding internal ID of the node
+		$id = mysqli_real_escape_string($conn,$id);
+		$sql1 = 'SELECT id FROM graphdb_entities WHERE name="'.$id.'";';
+		$result = $conn->query($sql1);
+		$this->internalID = $result->fetch_assoc()['id'];
+
+		// Loading labels
+		$sql2 = 'SELECT prop_value from graphdb_properties WHERE prop_type="l" AND e_id="'.$id.'";';
+		$result = $conn->query($sql2);
+		$this->labels = [];
+		while ($data = $result->fetch_assoc()) {
+			array_push($this->labels, $data['prop_value']);
+		}
+
+		// Loading properties
+		$sql3 = 'SELECT prop_name,prop_value FROM graphdb_properties WHERE prop_type="p" AND e_id="'.$id.'";';
+		$result = $conn->query($sql3);
+		$this->properties = array();
+		while ($data = $result->fetch_assoc()) {
+			$this->properties[$data['prop_name']] = $data['prop_value'];
+		}
+
+		// The node is completely loaded
+
 	}
 
 
 
-	public function setProperty() {
+	public function setProperty($key,$value) 
+	{
+		$conn = $this->conn;
+		$this->properties[$key] = $value;
+		$key = mysqli_real_escape_string($conn,$key);
+		$value = mysqli_real_escape_string($conn,$value);
+		$time = date('Y-m-d H:i:s', time());
+		$sql = 'INSERT INTO graphdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$this->internalID.',"'.$key.'","'.$value.'","p","'.$time.'");';
+		if($conn->query($sql)===True) {
+			return "ok";
+		}
+		else {
+			return "Error in setting the entity for property : ".$conn->error;
+		}
 
 	}
 
@@ -68,8 +108,6 @@ class Node
 */
 class GraphDB 
 {
-
-	public $numOfNodes;
 
 
 	/*
@@ -178,26 +216,6 @@ class GraphDB
 		}
 		else {
 			return "Error in setting label for entity : ".$conn->error;
-		}
-	}
-
-
-
-	/*
-	sets the property of the entity using the id provided
-	*/
-	public function setEntityProperty($id,$key,$value) 
-	{
-		$conn = $this->conn;
-		$key = mysqli_real_escape_string($conn,$key);
-		$value = mysqli_real_escape_string($conn,$value);
-		$time = date('Y-m-d H:i:s', time());
-		$sql = 'INSERT INTO graphdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$id.',"'.$key.'","'.$value.'","p","'.$time.'");';
-		if($conn->query($sql)===True) {
-			return "ok";
-		}
-		else {
-			return "Error in setting the entity for property : ".$conn->error;
 		}
 	}
 
