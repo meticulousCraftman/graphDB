@@ -28,12 +28,12 @@ class Node
 
 		// Finding internal ID of the node
 		$id = mysqli_real_escape_string($conn,$id);
-		$sql1 = 'SELECT id FROM graphdb_entities WHERE name="'.$id.'";';
+		$sql1 = 'SELECT id FROM graphdb_entities WHERE name="'.$this->ID.'";';
 		$result = $conn->query($sql1);
 		$this->internalID = $result->fetch_assoc()['id'];
 
 		// Loading labels
-		$sql2 = 'SELECT prop_value from graphdb_properties WHERE prop_type="l" AND e_id="'.$id.'";';
+		$sql2 = 'SELECT prop_value from graphdb_properties WHERE prop_type="l" AND e_id="'.$this->internalID.'";';
 		$result = $conn->query($sql2);
 		$this->labels = [];
 		while ($data = $result->fetch_assoc()) {
@@ -41,7 +41,7 @@ class Node
 		}
 
 		// Loading properties
-		$sql3 = 'SELECT prop_name,prop_value FROM graphdb_properties WHERE prop_type="p" AND e_id="'.$id.'";';
+		$sql3 = 'SELECT prop_name,prop_value FROM graphdb_properties WHERE prop_type="p" AND e_id="'.$this->internalID.'";';
 		$result = $conn->query($sql3);
 		$this->properties = array();
 		while ($data = $result->fetch_assoc()) {
@@ -57,7 +57,11 @@ class Node
 	public function setProperty($key,$value) 
 	{
 		$conn = $this->conn;
+		
+		// Updating instance variable
 		$this->properties[$key] = $value;
+
+		// Updating database
 		$key = mysqli_real_escape_string($conn,$key);
 		$value = mysqli_real_escape_string($conn,$value);
 		$time = date('Y-m-d H:i:s', time());
@@ -75,7 +79,22 @@ class Node
 
 	public function setLabel($label)
 	{
-		
+		$conn = $this->conn;
+
+		// Updating instance variable
+		array_push($this->labels, $label);
+
+		// Updating database
+		$label = mysqli_real_escape_string($conn,$label);
+		$time = date('Y-m-d H:i:s', time());
+		$sql = 'INSERT INTO graphdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$this->internalID.',"","'.$label.'","l","'.$time.'");';
+		echo $sql;
+		if($conn->query($sql)===True) {
+			return "ok";
+		}
+		else {
+			return "Error in setting label for entity : ".$conn->error;
+		}
 	}
 
 
