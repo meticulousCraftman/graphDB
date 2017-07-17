@@ -88,7 +88,6 @@ class Node
 		$label = mysqli_real_escape_string($conn,$label);
 		$time = date('Y-m-d H:i:s', time());
 		$sql = 'INSERT INTO graphdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$this->internalID.',"","'.$label.'","l","'.$time.'");';
-		echo $sql;
 		if($conn->query($sql)===True) {
 			return "ok";
 		}
@@ -108,13 +107,13 @@ class Node
 
 	public function getProperty($key)
 	{
-		
+		return $this->properties[$key];
 	}
 
 
 	public function getLabel()
 	{
-		
+		return $this->labels;
 	}
 }
 
@@ -212,29 +211,11 @@ class GraphDB
 		$hashid = mysqli_real_escape_string($conn,$hashid);
 		$sql = 'INSERT INTO graphdb_entities(name) VALUES("'.$hashid.'");';
 		if($conn->query($sql)===True){
-			return "ok";
+			$a = new Node($conn, $hashid);
+			return $a;
 		}
 		else {
 			return "Error in creating new entity : " . $conn->error;
-		}
-	}
-
-
-
-	/*
-	Creates a label for the entity with the given id
-	*/
-	public function setLabelForEntity($id,$label) 
-	{
-		$conn = $this->conn;
-		$label = mysqli_real_escape_string($conn,$label);
-		$time = date('Y-m-d H:i:s', time());
-		$sql = 'INSERT INTO graphdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$id.',"","'.$label.'","l","'.$time.'");';
-		if($conn->query($sql)===True){
-			return "ok";
-		}
-		else {
-			return "Error in setting label for entity : ".$conn->error;
 		}
 	}
 
