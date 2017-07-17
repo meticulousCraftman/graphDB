@@ -12,10 +12,62 @@ date_default_timezone_set('Asia/Kolkata');
 
 $GLOBALS['HASHID_SALT'] = "MaceHub is the best";
 
+
+
+
+/**
+* A class that represents a node
+*/
+class Node
+{
+	
+	function __construct() {
+		// Nothing to execute yet
+	}
+
+
+
+	public function setProperty() {
+
+	}
+
+
+
+	public function setLabel($label)
+	{
+		
+	}
+
+
+
+	public function relatedTo($node)
+	{
+		
+	}
+
+
+
+	public function getProperty($key)
+	{
+		
+	}
+
+
+	public function getLabel()
+	{
+		
+	}
+}
+
+
+
+
+
 /**
 * Obejct oriented implementation of GraphDB
 */
-class GraphDB {
+class GraphDB 
+{
 
 	public $numOfNodes;
 
@@ -24,7 +76,8 @@ class GraphDB {
 	* Private method that deals with the creation of tables
 	* in a mysql database
 	*/
-	private function setupTables($conn) {
+	private function setupTables($conn) 
+	{
 		$graphdb_entities = false;
 		$graphdb_relations = false;
 		$graphdb_properties = false;
@@ -75,7 +128,8 @@ class GraphDB {
 	/*
 	* Constructor method
 	*/
-	function __construct($conn) {
+	function __construct($conn) 
+	{
 		$this->conn = $conn;
 		$this->setupTables($conn);
 		
@@ -90,7 +144,8 @@ class GraphDB {
 	/*
 	Creates new entity with the given name
 	*/
-	public function createNode() {
+	public function createNode() 
+	{
 		$conn = $this->conn;
 		$this->numOfNodes = $this->numOfNodes + 1;
 		// Generating the node's hashid
@@ -112,7 +167,8 @@ class GraphDB {
 	/*
 	Creates a label for the entity with the given id
 	*/
-	public function setLabelForEntity($id,$label) {
+	public function setLabelForEntity($id,$label) 
+	{
 		$conn = $this->conn;
 		$label = mysqli_real_escape_string($conn,$label);
 		$time = date('Y-m-d H:i:s', time());
@@ -130,7 +186,8 @@ class GraphDB {
 	/*
 	sets the property of the entity using the id provided
 	*/
-	public function setEntityProperty($id,$key,$value) {
+	public function setEntityProperty($id,$key,$value) 
+	{
 		$conn = $this->conn;
 		$key = mysqli_real_escape_string($conn,$key);
 		$value = mysqli_real_escape_string($conn,$value);
@@ -150,7 +207,8 @@ class GraphDB {
 	For setting the relationship label between two given
 	entities.
 	*/
-	public function setEntityRelationLabel($e1_id,$e2_id,$label) {
+	public function setEntityRelationLabel($e1_id,$e2_id,$label) 
+	{
 		$conn = $this->conn;
 		$label = mysqli_real_escape_string($conn,$label);
 		$time = date('Y-m-d H:i:s', time());
@@ -167,7 +225,8 @@ class GraphDB {
 	/*
 	Sets the key:value pair for a relation existing between two entities
 	*/
-	public function setEntityRelationProperty($e1_id,$e2_id,$key,$value) {
+	public function setEntityRelationProperty($e1_id,$e2_id,$key,$value) 
+	{
 		$conn = $this->conn;
 		$label = mysqli_real_escape_string($conn,$label);
 		$time = date('Y-m-d H:i:s', time());
@@ -184,7 +243,8 @@ class GraphDB {
 	/*
 	Gets the id for an entity by names
 	*/
-	public function getIDByName($name) {
+	public function getIDByName($name) 
+	{
 		$conn = $this->conn;
 		$name = mysqli_real_escape_string($conn,$name);
 		$sql = 'SELECT id FROM graphdb_entities WHERE name="'.$name.'";';
@@ -201,7 +261,8 @@ class GraphDB {
 	For getting the labels associated with a given entity. The 
 	entity is retrived by the given id.
 	*/
-	public function getEntityLabels($id) {
+	public function getEntityLabels($id) 
+	{
 		$conn = $this->conn;
 		$sql = 'SELECT prop_value from graphdb_properties WHERE prop_type="l" AND e_id="'.$id.'";';
 		$result = $conn->query($sql);
@@ -216,7 +277,8 @@ class GraphDB {
 	/*
 	For getting entity's name by id
 	*/
-	public function getEntityName($id) {
+	public function getEntityName($id) 
+	{
 		$conn = $this->conn;
 		$sql = 'SELECT name from graphdb_entities WHERE id='.$id.';';
 		$result = $conn->query($sql);
@@ -229,7 +291,8 @@ class GraphDB {
 	/*
 	For getting all the properties of an entity by id
 	*/
-	public function getAllProperties($id) {
+	public function getAllProperties($id) 
+	{
 		$conn = $this->conn;
 		$sql = 'SELECT prop_name,prop_value FROM graphdb_properties WHERE prop_type="p" AND e_id="'.$id.'";';
 		$result = $conn->query($sql);
@@ -244,7 +307,8 @@ class GraphDB {
 	/*
 	For getting the list of properties that a relation has
 	*/
-	public function getRelationProperty($e1_id,$e2_id) {
+	public function getRelationProperty($e1_id,$e2_id) 
+	{
 		$conn = $this->conn;
 		$e1_id = (int)$e1_id;
 		$e2_id = (int)$e2_id;
@@ -256,9 +320,7 @@ class GraphDB {
 		}
 		return $properties;
 	}
-
-
-}	// Class ending brace
+}
 
 
 ?>
