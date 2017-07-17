@@ -94,7 +94,7 @@ class GraphDB {
 		$conn = $this->conn;
 		$this->numOfNodes = $this->numOfNodes + 1;
 		// Generating the node's hashid
-		$hashids = new Hashids($GLOBALS['HASHID_SALT'], 6);	// 6 characters give us the power to express 56.8 billion entities uniquely.
+		$hashids = new Hashids($GLOBALS['HASHID_SALT'], 7);	// 7 characters give us the power to express 3521.61 billion entities uniquely.
 		$hashid = $hashids->encode($this->numOfNodes);
 
 		$hashid = mysqli_real_escape_string($conn,$hashid);
