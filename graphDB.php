@@ -21,11 +21,10 @@ $GLOBALS['HASHID_SALT'] = "MaceHub is the best";
 class Node
 {
 
-	function __construct($conn,$id) 
+	// For reloading all the properties and labels from the
+	// grpah incase the contents of the database is updated
+	public function reload() 
 	{
-		$this->conn = $conn;
-		$this->ID = $id;
-
 		// Finding internal ID of the node
 		$id = mysqli_real_escape_string($conn,$id);
 		$sql1 = 'SELECT id FROM graphdb_entities WHERE name="'.$this->ID.'";';
@@ -47,8 +46,15 @@ class Node
 		while ($data = $result->fetch_assoc()) {
 			$this->properties[$data['prop_name']] = $data['prop_value'];
 		}
+	}
 
-		// The node is completely loaded
+	function __construct($conn,$id) 
+	{
+		$this->conn = $conn;
+		$this->ID = $id;
+
+		// Loading in the properties of the Node from db
+		$this->reload();
 
 	}
 
