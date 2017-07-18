@@ -52,7 +52,7 @@ class Node
 		}
 	}
 
-	function __construct($conn,$id) 
+	function __construct($conn,$id,$load=True) 
 	{
 		$this->conn = $conn;
 		$this->ID = $id;
@@ -60,8 +60,10 @@ class Node
 		$this->labels = [];
 		$this->properties = array();
 
-		// Loading in the properties of the Node from db
-		$this->reload();
+		// Load the properties of the Node from db
+		if ($load==True) {
+			$this->reload();
+		}
 
 	}
 
