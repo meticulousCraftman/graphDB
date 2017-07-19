@@ -25,12 +25,13 @@ class Node
 	// grpah incase the contents of the database is updated
 	public function reload() 
 	{
+		$conn = $this->conn;
 		// Clearing out data from the array so that it doesn't messes up with data
 		$this->labels= [];
 		$this->properties = array();
 
 		// Finding internal ID of the node
-		$id = mysqli_real_escape_string($conn,$id);
+		$id = mysqli_real_escape_string($conn,$this->ID);
 		$sql1 = 'SELECT id FROM graphdb_entities WHERE name="'.$this->ID.'";';
 		$result = $conn->query($sql1);
 		$this->internalID = $result->fetch_assoc()['id'];
