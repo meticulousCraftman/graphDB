@@ -114,13 +114,6 @@ class Node
 
 
 
-	public function relatedTo($node)
-	{
-		
-	}
-
-
-
 	public function getProperty($key)
 	{
 		return $this->properties[$key];
@@ -131,6 +124,13 @@ class Node
 	{
 		return $this->labels;
 	}
+
+
+
+	public function relatedTo($node)
+	{
+		
+	}
 }
 
 
@@ -138,7 +138,7 @@ class Node
 
 
 /**
-* Obejct oriented implementation of GraphDB
+* Main class
 */
 class GraphDB 
 {
@@ -274,68 +274,6 @@ class GraphDB
 	}
 
 
-	/*
-	Gets the id for an entity by names
-	*/
-	public function getIDByName($name) 
-	{
-		$conn = $this->conn;
-		$name = mysqli_real_escape_string($conn,$name);
-		$sql = 'SELECT id FROM graphdb_entities WHERE name="'.$name.'";';
-		$result = $conn->query($sql);
-		$ids = [];
-		while ($data = $result->fetch_assoc()) {
-			array_push($ids,$data['id']);
-		}
-		return $ids;
-	}
-
-
-	/*
-	For getting the labels associated with a given entity. The 
-	entity is retrived by the given id.
-	*/
-	public function getEntityLabels($id) 
-	{
-		$conn = $this->conn;
-		$sql = 'SELECT prop_value from graphdb_properties WHERE prop_type="l" AND e_id="'.$id.'";';
-		$result = $conn->query($sql);
-		$labels = [];
-		while ($data = $result->fetch_assoc()) {
-			array_push($labels, $data['prop_value']);
-		}
-		return $labels;
-	}
-
-
-	/*
-	For getting entity's name by id
-	*/
-	public function getEntityName($id) 
-	{
-		$conn = $this->conn;
-		$sql = 'SELECT name from graphdb_entities WHERE id='.$id.';';
-		$result = $conn->query($sql);
-		$data = $result->fetch_assoc();
-		var_dump($data);
-		return $data['name'];
-	}
-
-
-	/*
-	For getting all the properties of an entity by id
-	*/
-	public function getAllProperties($id) 
-	{
-		$conn = $this->conn;
-		$sql = 'SELECT prop_name,prop_value FROM graphdb_properties WHERE prop_type="p" AND e_id="'.$id.'";';
-		$result = $conn->query($sql);
-		$properties = array();
-		while ($data = $result->fetch_assoc()) {
-			$properties[$data['prop_name']] = $data['prop_value'];
-		}
-		return $properties;
-	}
 
 
 	/*
@@ -354,7 +292,39 @@ class GraphDB
 		}
 		return $properties;
 	}
+
+
+	public function GQL()
+	{
+		$a = new GQL();
+		return $a;
+	}
 }
+
+
+
+
+
+/**
+* For searching the graph database
+*/
+class GQL
+{
+
+	function __construct($conn)
+	{
+		$conn = $this->conn;
+	}
+
+
+	public function createNode()
+	{
+		
+	}
+}
+
+
+
 
 
 ?>
