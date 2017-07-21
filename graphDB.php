@@ -138,6 +138,52 @@ class Node
 
 
 /**
+* Relationship class
+*/
+class Relation
+{
+	$ID1 = "";
+	$ID2 = "";
+	$modifiedOn = "";
+
+	function reload() 
+	{
+
+	}
+	
+	function __construct($conn)
+	{
+		// Nothing as of yet
+	}
+
+	function setProperty($key,$value) 
+	{
+
+	}
+
+	function setLabel($label) 
+	{
+
+	}
+
+	function getProperty($key) 
+	{
+
+	}
+
+	function getLabels() 
+	{
+
+	}
+
+}
+
+
+
+
+
+
+/**
 * Main class
 */
 class GraphDB 
@@ -319,7 +365,8 @@ class GQL
 
 	public function createNode()
 	{
-		
+		$conn = $this->conn;
+		$a = new Node($conn)
 	}
 }
 
