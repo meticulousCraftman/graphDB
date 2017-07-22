@@ -186,6 +186,18 @@ class Relationship
 	function setLabel($label) 
 	{
 
+		$conn = $this->conn;
+		$label = mysqli_real_escape_string($conn,$label);
+		$time = date('Y-m-d H:i:s', time());
+		$sql = 'INSERT INTO graphdb_relations(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$this->nodeID1.','.$this->nodeID2.',"","'.$label.'","l","'.$time.'");';
+		if($conn->query($sql)) {
+			array_push($this->labels, $label);
+			return "ok";
+		}
+		else {
+			return "Error in setting entity relation label : ".$conn->error;
+		}
+
 	}
 
 	function getProperty($key) 
