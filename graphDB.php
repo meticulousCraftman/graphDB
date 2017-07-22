@@ -127,9 +127,11 @@ class Node
 
 
 
-	public function relatedTo($node)
+	public function connect($node)
 	{
-		
+		$conn = $this->conn;
+		$a = new Relationship($conn,$this->internalID,$node->internalID);
+		return $a;
 	}
 }
 
@@ -140,24 +142,44 @@ class Node
 /**
 * Relationship class
 */
-class Relation
+class Relationship
 {
-	$ID1 = "";
-	$ID2 = "";
-	$modifiedOn = "";
 
 	function reload() 
 	{
 
 	}
 	
-	function __construct($conn)
+	function __construct($conn,$node1,$node2)
 	{
-		// Nothing as of yet
+		// All the instance variables
+		$this->conn = $conn;
+		$this->nodeID1 = "";
+		$this->nodeID2 = "";
+		$this->labels = [];
+		$this->properties = array();
+		$this->modifiedOn = "";
+
+		$this->nodeID1 = $node1->internalID;
+		$this->nodeID2 = $node2->internalID;
+
 	}
 
 	function setProperty($key,$value) 
 	{
+		$conn = $this->conn;
+		$key = mysqli_real_escape_string($conn,$key);
+		$value = mysqli_real_escape_string($conn,$value);
+		$time = date('Y-m-d H:i:s', time());
+		$sql = 'INSERT INTO graphdb_relations(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$this->nodeID1.','.$this->nodeID2.',"'.$key.'","'.$value.'","p","'.$time.'");';
+		if($conn->query($sql)) 
+		{
+			$this->properties[$key] = $value;
+			return "ok";
+		}
+		else {
+			return "Error in setting entity relation label : ".$conn->error;
+		}
 
 	}
 
@@ -363,10 +385,24 @@ class GQL
 	}
 
 
-	public function createNode()
+	function node()
 	{
 		$conn = $this->conn;
 		$a = new Node($conn)
+	}
+
+
+	function relationship() 
+	{
+		$conn = $this->conn;
+		$a = new Relationship();
+
+	}
+
+
+	function search()
+	{
+		// Do the searching here
 	}
 }
 
