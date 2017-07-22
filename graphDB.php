@@ -53,6 +53,8 @@ class Node
 		}
 	}
 
+
+
 	function __construct($conn,$id,$load=True) 
 	{
 		$this->conn = $conn;
@@ -120,6 +122,7 @@ class Node
 	}
 
 
+
 	public function getLabel()
 	{
 		return $this->labels;
@@ -159,7 +162,8 @@ class Relationship
 		$e2_id = (int)$this->nodeID2;
 		$sql = 'SELECT rel_name,rel_value FROM graphdb_relations WHERE rel_type="p" AND e1_id='.$e1_id.' AND e2_id='.$e2_id.';';
 		$result = $conn->query($sql);
-		while ($data = $result->fetch_assoc()) {
+		while ($data = $result->fetch_assoc()) 
+		{
 			$this->properties[$data['rel_name']] = $data['rel_value'];
 		}
 		
@@ -174,6 +178,8 @@ class Relationship
 
 
 	}
+
+
 	
 	function __construct($conn,$node1,$node2,$load=True)
 	{
@@ -194,6 +200,8 @@ class Relationship
 
 	}
 
+
+
 	function setProperty($key,$value) 
 	{
 		$conn = $this->conn;
@@ -212,6 +220,8 @@ class Relationship
 
 	}
 
+
+
 	function setLabel($label) 
 	{
 
@@ -229,10 +239,14 @@ class Relationship
 
 	}
 
+
+
 	function getProperty($key) 
 	{
 		return $this->properties[$key];
 	}
+
+
 
 	function getLabels() 
 	{
@@ -345,6 +359,7 @@ class GraphDB
 	}
 
 
+
 	public function GQL()
 	{
 		$a = new GQL();
@@ -368,11 +383,13 @@ class GQL
 	}
 
 
+
 	function node()
 	{
 		$conn = $this->conn;
-		$a = new Node($conn)
+		$a = new Node($conn);
 	}
+
 
 
 	function relationship() 
@@ -381,6 +398,7 @@ class GQL
 		$a = new Relationship();
 
 	}
+
 
 
 	function search()
