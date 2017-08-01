@@ -133,7 +133,7 @@ class Node
 	public function connect($node)
 	{
 		$conn = $this->conn;
-		$a = new Relationship($conn,$this->internalID,$node->internalID);
+		$a = new Relationship($conn,$this,$node);
 		return $a;
 	}
 }
