@@ -279,7 +279,7 @@ class GraphDB
 
 		$sql1 = "CREATE TABLE IF NOT EXISTS graphdb_entities(id INT(6) AUTO_INCREMENT PRIMARY KEY, name TEXT NOT NULL);";
 
-		$sql2 = "CREATE TABLE IF NOT EXISTS graphdb_relations(id INT(6) AUTO_INCREMENT PRIMARY KEY, e1_id INT NOT NULL,e2_id INT NOT NULL,group INT NOT NULL,rel_name TEXT,rel_value TEXT,rel_type VARCHAR(255), modified_on TIMESTAMP);";
+		$sql2 = "CREATE TABLE IF NOT EXISTS graphdb_relations(id INT(6) AUTO_INCREMENT PRIMARY KEY, e1_id INT NOT NULL,e2_id INT NOT NULL,rel_name TEXT,rel_value TEXT,rel_type VARCHAR(255), modified_on TIMESTAMP);";
 
 		$sql3 = "CREATE TABLE IF NOT EXISTS graphdb_properties(id INT(6) AUTO_INCREMENT PRIMARY KEY,e_id INT NOT NULL,prop_name TEXT,prop_value TEXT,prop_type VARCHAR(255) NOT NULL,modified_on TIMESTAMP);";
 
