@@ -51,6 +51,15 @@ class Node
 		while ($data = $result->fetch_assoc()) {
 			$this->properties[$data['prop_name']] = $data['prop_value'];
 		}
+
+		// Loading relations to other objects
+		$sql4 = 'SELECT DISTINCT e1_id,e2_id FROM graphdb_relations WHERE e1_id='.$this->internalID.';';
+		$result = $conn->query($sql4);
+		$this->outgoingRelations = [];
+		while ($data = $result->fetch_assoc()) {
+			$a = new Relationship($conn,$data['e1_id'],$data['e2_id'],$load=False,$ids=True);
+			array_push($this->outgoingRelations, $a);
+		}
 	}
 
 
@@ -62,6 +71,8 @@ class Node
 		$this->internalID = "";
 		$this->labels = [];
 		$this->properties = array();
+		$this->outgoingRelations = [];
+		$this->incomingRelations = [];
 
 		// Load the properties of the Node from db
 		if ($load==True) {
@@ -181,7 +192,7 @@ class Relationship
 
 
 	
-	function __construct($conn,$node1,$node2,$load=True)
+	function __construct($conn,$node1,$node2,$load=True,$ids=False)
 	{
 		// All the instance variables
 		$this->conn = $conn;
@@ -190,9 +201,14 @@ class Relationship
 		$this->labels = [];
 		$this->properties = array();
 		$this->modifiedOn = "";
-
-		$this->nodeID1 = $node1->internalID;
-		$this->nodeID2 = $node2->internalID;
+		if($ids==False) {
+			$this->nodeID1 = $node1->internalID;
+			$this->nodeID2 = $node2->internalID;
+		}
+		else {
+			$this->nodeID1 = $node1;
+			$this->nodeID2 = $node2;
+		}
 
 		if($load==True) {
 			$this->reload();
