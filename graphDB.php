@@ -52,13 +52,22 @@ class Node
 			$this->properties[$data['prop_name']] = $data['prop_value'];
 		}
 
-		// Loading relations to other objects
+		// Loading outgoing relations
 		$sql4 = 'SELECT DISTINCT e1_id,e2_id FROM graphdb_relations WHERE e1_id='.$this->internalID.';';
 		$result = $conn->query($sql4);
 		$this->outgoingRelations = [];
 		while ($data = $result->fetch_assoc()) {
 			$a = new Relationship($conn,$data['e1_id'],$data['e2_id'],$load=False,$ids=True);
 			array_push($this->outgoingRelations, $a);
+		}
+
+		// Loading incoming relations
+		$sql4 = 'SELECT DISTINCT e1_id,e2_id FROM graphdb_relations WHERE e2_id='.$this->internalID.';';
+		$result = $conn->query($sql4);
+		$this->incomingRelations = [];
+		while ($data = $result->fetch_assoc()) {
+			$a = new Relationship($conn,$data['e1_id'],$data['e2_id'],$load=False,$ids=True);
+			array_push($this->incomingRelations, $a);
 		}
 	}
 
