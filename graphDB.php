@@ -351,12 +351,20 @@ class GraphDB
 	function __construct($conn) 
 	{
 		$this->conn = $conn;
+		$this->numOfNodes = 0;
+		$this->numOfRelations = 0;
+
 		$this->setupTables($conn);
 		
 		// Counting no. of nodes
 		$sql = 'SELECT * FROM gdb_nodes;';
 		$result = $this->conn->query($sql);
 		$this->numOfNodes = intval($result->num_rows);
+
+		// Counting no. of relations
+		$sql2 = 'SELECT DISTINCT e1_id,e2_id FROM gdb_relations;';
+		$result = $conn->query($sql2);
+		$this->numOfRelations = intval($result->num_rows);
 	}
 
 	
