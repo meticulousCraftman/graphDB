@@ -154,6 +154,7 @@ class Node
 	{
 		$conn = $this->conn;
 		$a = new Relationship($conn,$this,$node);
+		array_push($this->outgoingRelations, $a);
 		return $a;
 	}
 }
