@@ -57,7 +57,7 @@ class Node
 		$result = $conn->query($sql4);
 		$this->outgoingRelations = [];
 		while ($data = $result->fetch_assoc()) {
-			$a = new Relationship($conn,$data['e1_id'],$data['e2_id'],$load=False,$ids=True);
+			$a = new Relationship($this->gdb,$data['e1_id'],$data['e2_id'],$load=False,$ids=True);
 			array_push($this->outgoingRelations, $a);
 		}
 
@@ -66,22 +66,24 @@ class Node
 		$result = $conn->query($sql4);
 		$this->incomingRelations = [];
 		while ($data = $result->fetch_assoc()) {
-			$a = new Relationship($conn,$data['e1_id'],$data['e2_id'],$load=False,$ids=True);
+			$a = new Relationship($this->gdb,$data['e1_id'],$data['e2_id'],$load=False,$ids=True);
 			array_push($this->incomingRelations, $a);
 		}
 	}
 
 
 
-	function __construct($conn,$id,$load=True) 
+	function __construct($gdb,$id,$load=True) 
 	{
-		$this->conn = $conn;
+		$this->gdb = $gdb;
+		$this->conn = $gdb->conn;
 		$this->ID = $id;
 		$this->internalID = "";
 		$this->labels = [];
 		$this->properties = array();
 		$this->outgoingRelations = [];
 		$this->incomingRelations = [];
+		$this->modifiedOn = "";
 
 		// Load the properties of the Node from db
 		if ($load==True) {
@@ -150,10 +152,9 @@ class Node
 
 
 
-	public function connect($node)
+	public function connectTo($node)
 	{
-		$conn = $this->conn;
-		$a = new Relationship($conn,$this,$node);
+		$a = new Relationship($this->gdb,$this,$node);
 		array_push($this->outgoingRelations, $a);
 		return $a;
 	}
@@ -202,10 +203,11 @@ class Relationship
 
 
 	
-	function __construct($conn,$node1,$node2,$load=True,$ids=False)
+	function __construct($gdb,$node1,$node2,$load=True,$ids=False)
 	{
 		// All the instance variables
-		$this->conn = $conn;
+		$this->gdb = $gdb;
+		$this->conn = $gdb->conn;
 		$this->nodeID1 = "";
 		$this->nodeID2 = "";
 		$this->labels = [];
@@ -396,7 +398,7 @@ class GraphDB
 
 	public function GQL()
 	{
-		$a = new GQL();
+		$a = new GQL($this->gdb);
 		return $a;
 	}
 }
@@ -411,14 +413,16 @@ class GraphDB
 class GQL
 {
 
-	function __construct($conn)
+	function __construct($gdb)
 	{
+		$this->conn = $gdb->conn;
+		$this->gdb  = $gdb;
 		$conn = $this->conn;
 	}
 
 
 
-	function node()
+	function createNode()
 	{
 		$conn = $this->conn;
 		$a = new Node($conn);
@@ -429,7 +433,7 @@ class GQL
 	function relationship() 
 	{
 		$conn = $this->conn;
-		$a = new Relationship();
+		$a = new Relationship($this->gdb);
 
 	}
 
