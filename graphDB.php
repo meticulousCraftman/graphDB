@@ -32,12 +32,12 @@ class Node
 
 		// Finding internal ID of the node
 		$id = mysqli_real_escape_string($conn,$this->ID);
-		$sql1 = 'SELECT id FROM gdb_nodes WHERE name="'.$this->ID.'";';
+		$sql1 = 'SELECT id FROM '.$this->gdb->gdb_table_nodes.' WHERE name="'.$this->ID.'";';
 		$result = $conn->query($sql1);
 		$this->internalID = $result->fetch_assoc()['id'];
 
 		// Loading labels
-		$sql2 = 'SELECT prop_value from gdb_properties WHERE prop_type="l" AND e_id="'.$this->internalID.'";';
+		$sql2 = 'SELECT prop_value from '.$this->gdb->gdb_table_properties.' WHERE prop_type="l" AND e_id="'.$this->internalID.'";';
 		$result = $conn->query($sql2);
 		$this->labels = [];
 		while ($data = $result->fetch_assoc()) {
@@ -45,7 +45,7 @@ class Node
 		}
 
 		// Loading properties
-		$sql3 = 'SELECT prop_name,prop_value FROM gdb_properties WHERE prop_type="p" AND e_id="'.$this->internalID.'";';
+		$sql3 = 'SELECT prop_name,prop_value FROM '.$this->gdb->gdb_table_properties.' WHERE prop_type="p" AND e_id="'.$this->internalID.'";';
 		$result = $conn->query($sql3);
 		$this->properties = array();
 		while ($data = $result->fetch_assoc()) {
@@ -53,7 +53,7 @@ class Node
 		}
 
 		// Loading outgoing relations
-		$sql4 = 'SELECT DISTINCT e1_id,e2_id FROM gdb_relations WHERE e1_id='.$this->internalID.';';
+		$sql4 = 'SELECT DISTINCT e1_id,e2_id FROM '.$this->gdb->gdb_table_relations.' WHERE e1_id='.$this->internalID.';';
 		$result = $conn->query($sql4);
 		$this->outgoingRelations = [];
 		while ($data = $result->fetch_assoc()) {
@@ -62,7 +62,7 @@ class Node
 		}
 
 		// Loading incoming relations
-		$sql4 = 'SELECT DISTINCT e1_id,e2_id FROM gdb_relations WHERE e2_id='.$this->internalID.';';
+		$sql4 = 'SELECT DISTINCT e1_id,e2_id FROM '.$this->gdb->gdb_table_relations.' WHERE e2_id='.$this->internalID.';';
 		$result = $conn->query($sql4);
 		$this->incomingRelations = [];
 		while ($data = $result->fetch_assoc()) {
@@ -105,7 +105,7 @@ class Node
 		$key = mysqli_real_escape_string($conn,$key);
 		$value = mysqli_real_escape_string($conn,$value);
 		$time = date('Y-m-d H:i:s', time());
-		$sql = 'INSERT INTO gdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$this->internalID.',"'.$key.'","'.$value.'","p","'.$time.'");';
+		$sql = 'INSERT INTO '.$this->gdb->gdb_table_properties.'(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$this->internalID.',"'.$key.'","'.$value.'","p","'.$time.'");';
 		if($conn->query($sql)===True) {
 			return "ok";
 		}
@@ -127,7 +127,7 @@ class Node
 		// Updating database
 		$label = mysqli_real_escape_string($conn,$label);
 		$time = date('Y-m-d H:i:s', time());
-		$sql = 'INSERT INTO gdb_properties(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$this->internalID.',"","'.$label.'","l","'.$time.'");';
+		$sql = 'INSERT INTO '.$this->gdb->gdb_table_properties.'(e_id,prop_name,prop_value,prop_type,modified_on) VALUES('.$this->internalID.',"","'.$label.'","l","'.$time.'");';
 		if($conn->query($sql)===True) {
 			return "ok";
 		}
@@ -182,7 +182,7 @@ class Relationship
 		// Loading properties
 		$e1_id = (int)$this->nodeID1;
 		$e2_id = (int)$this->nodeID2;
-		$sql = 'SELECT rel_name,rel_value FROM gdb_relations WHERE rel_type="p" AND e1_id='.$e1_id.' AND e2_id='.$e2_id.';';
+		$sql = 'SELECT rel_name,rel_value FROM '.$this->gdb->gdb_table_relations.' WHERE rel_type="p" AND e1_id='.$e1_id.' AND e2_id='.$e2_id.';';
 		$result = $conn->query($sql);
 		while ($data = $result->fetch_assoc()) 
 		{
@@ -191,7 +191,7 @@ class Relationship
 		
 
 		// Loading labels
-		$sql2 = 'SELECT rel_value from gdb_relations WHERE rel_type="l" AND e1_id='.$e1_id.' AND e2_id='.$e2_id.';';
+		$sql2 = 'SELECT rel_value from '.$this->gdb->gdb_table_relations.' WHERE rel_type="l" AND e1_id='.$e1_id.' AND e2_id='.$e2_id.';';
 		$result = $conn->query($sql2);
 		$this->labels = [];
 		while ($data = $result->fetch_assoc()) {
@@ -236,7 +236,7 @@ class Relationship
 		$key = mysqli_real_escape_string($conn,$key);
 		$value = mysqli_real_escape_string($conn,$value);
 		$time = date('Y-m-d H:i:s', time());
-		$sql = 'INSERT INTO gdb_relations(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$this->nodeID1.','.$this->nodeID2.',"'.$key.'","'.$value.'","p","'.$time.'");';
+		$sql = 'INSERT INTO '.$this->gdb->gdb_table_relations.'(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$this->nodeID1.','.$this->nodeID2.',"'.$key.'","'.$value.'","p","'.$time.'");';
 		if($conn->query($sql)) 
 		{
 			$this->properties[$key] = $value;
@@ -256,7 +256,7 @@ class Relationship
 		$conn = $this->conn;
 		$label = mysqli_real_escape_string($conn,$label);
 		$time = date('Y-m-d H:i:s', time());
-		$sql = 'INSERT INTO gdb_relations(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$this->nodeID1.','.$this->nodeID2.',"","'.$label.'","l","'.$time.'");';
+		$sql = 'INSERT INTO '.$this->gdb->gdb_table_relations.'(e1_id,e2_id,rel_name,rel_value,rel_type,modified_on) VALUES('.$this->nodeID1.','.$this->nodeID2.',"","'.$label.'","l","'.$time.'");';
 		if($conn->query($sql)) {
 			array_push($this->labels, $label);
 			return "ok";
@@ -307,11 +307,11 @@ class GraphDB
 		$gdb_relations = false;
 		$gdb_properties = false;
 
-		$sql1 = "CREATE TABLE IF NOT EXISTS gdb_nodes(id INT(6) AUTO_INCREMENT PRIMARY KEY, name TEXT NOT NULL);";
+		$sql1 = 'CREATE TABLE IF NOT EXISTS '.$this->gdb_table_nodes.'(id INT(6) AUTO_INCREMENT PRIMARY KEY, name TEXT NOT NULL);';
 
-		$sql2 = "CREATE TABLE IF NOT EXISTS gdb_relations(id INT(6) AUTO_INCREMENT PRIMARY KEY, e1_id INT NOT NULL,e2_id INT NOT NULL,rel_name TEXT,rel_value TEXT,rel_type VARCHAR(255), modified_on TIMESTAMP);";
+		$sql2 = 'CREATE TABLE IF NOT EXISTS '.$this->gdb_table_relations.'(id INT(6) AUTO_INCREMENT PRIMARY KEY, e1_id INT NOT NULL,e2_id INT NOT NULL,rel_name TEXT,rel_value TEXT,rel_type VARCHAR(255), modified_on TIMESTAMP);';
 
-		$sql3 = "CREATE TABLE IF NOT EXISTS gdb_properties(id INT(6) AUTO_INCREMENT PRIMARY KEY,e_id INT NOT NULL,prop_name TEXT,prop_value TEXT,prop_type VARCHAR(255) NOT NULL,modified_on TIMESTAMP);";
+		$sql3 = 'CREATE TABLE IF NOT EXISTS '.$this->gdb_table_properties.'(id INT(6) AUTO_INCREMENT PRIMARY KEY,e_id INT NOT NULL,prop_name TEXT,prop_value TEXT,prop_type VARCHAR(255) NOT NULL,modified_on TIMESTAMP);';
 
 		$errors = array(
 			'gdb_nodes' => "",
@@ -408,8 +408,16 @@ class GraphDB
 	/*
 	* Constructor method
 	*/
-	function __construct($conn) 
+	function __construct($conn,$gdbname='a') 
 	{
+		$this->gdbname = $gdbname;
+
+		//Table names
+		$this->gdb_table_nodes = "gdb_".$gdbname."_nodes";
+		$this->gdb_table_relations = "gdb_".$gdbname."_relations";
+		$this->gdb_table_properties = "gdb_".$gdbname."_properties";
+
+
 		$this->conn = $conn;
 		$this->numOfNodes = 0;
 		$this->numOfRelations = 0;
@@ -418,12 +426,12 @@ class GraphDB
 		$this->setupTempTables();
 		
 		// Counting no. of nodes
-		$sql = 'SELECT * FROM gdb_nodes;';
-		$result = $this->conn->query($sql);
+		$sql = 'SELECT * FROM '.$this->gdb_table_nodes.';';
+		$result = $conn->query($sql);
 		$this->numOfNodes = intval($result->num_rows);
 
 		// Counting no. of relations
-		$sql2 = 'SELECT DISTINCT e1_id,e2_id FROM gdb_relations;';
+		$sql2 = 'SELECT DISTINCT e1_id,e2_id FROM '.$this->gdb_table_relations.';';
 		$result = $conn->query($sql2);
 		$this->numOfRelations = intval($result->num_rows);
 	}
@@ -442,9 +450,9 @@ class GraphDB
 		$hashid = $hashids->encode($this->numOfNodes);
 
 		$hashid = mysqli_real_escape_string($conn,$hashid);
-		$sql = 'INSERT INTO gdb_nodes(name) VALUES("'.$hashid.'");';
+		$sql = 'INSERT INTO '.$this->gdb_table_nodes.'(name) VALUES("'.$hashid.'");';
 		if($conn->query($sql)===True){
-			$a = new Node($conn, $hashid);
+			$a = new Node($this, $hashid);
 			return $a;
 		}
 		else {
@@ -483,7 +491,7 @@ class GQL
 	function createNode()
 	{
 		$conn = $this->conn;
-		$a = new Node($conn);
+		$a = new Node($this->gdb);
 	}
 
 
