@@ -299,8 +299,10 @@ class GraphDB
 	* Private method that deals with the creation of tables
 	* in a mysql database
 	*/
-	private function setupTables($conn) 
+	private function setupTables() 
 	{
+		$conn = $this->conn;
+
 		$gdb_nodes = false;
 		$gdb_relations = false;
 		$gdb_properties = false;
@@ -348,6 +350,61 @@ class GraphDB
 	}
 
 
+	/**
+	* Creates the tables for storing the search results
+	*/
+	private function setupTempTables() 
+	{
+
+		$conn = $this->conn;
+
+		$gdb_temp_nodes = false;
+		$gdb_temp_relations = false;
+		$gdb_temp_properties = false;
+
+		$sql1 = "CREATE TABLE IF NOT EXISTS gdb_temp_nodes(id INT(6) AUTO_INCREMENT PRIMARY KEY,group_id INT NOT NULL, name TEXT NOT NULL);";
+
+		$sql2 = "CREATE TABLE IF NOT EXISTS gdb_temp_relations(id INT(6) AUTO_INCREMENT PRIMARY KEY, group_id INT NOT NULL, e1_id INT NOT NULL,e2_id INT NOT NULL,rel_name TEXT,rel_value TEXT,rel_type VARCHAR(255), modified_on TIMESTAMP);";
+
+		$sql3 = "CREATE TABLE IF NOT EXISTS gdb_temp_properties(id INT(6) AUTO_INCREMENT PRIMARY KEY,group_id INT NOT NULL, e_id INT NOT NULL,prop_name TEXT,prop_value TEXT,prop_type VARCHAR(255) NOT NULL,modified_on TIMESTAMP);";
+
+		$errors = array(
+			'gdb_temp_nodes' => "",
+			'gdb_temp_relations' => "",
+			'gdb_temp_properties' => ""
+			 );
+
+		if ($conn->query($sql1)===True) {
+			$gdb_temp_nodes = true;
+		}
+		else {
+			$errors['gdb_temp_nodes'] = $conn->error;
+		}
+
+		if ($conn->query($sql2)===True) {
+			$gdb_temp_relations = true;
+		}
+		else {
+			$errors['gdb_temp_relations'] = $conn->error;
+		}
+
+		if ($conn->query($sql3)===True) {
+			$gdb_temp_properties = true;
+			return "ok";
+		}
+		else {
+			$errors['gdb_temp_properties'] = $conn->error;
+		}
+
+		if($gdb_temp_nodes && $gdb_temp_relations && $gdb_temp_properties === True) {
+			return "ok";
+		}
+		else {
+			return $errors;
+		}
+	}
+
+
 	/*
 	* Constructor method
 	*/
@@ -357,7 +414,8 @@ class GraphDB
 		$this->numOfNodes = 0;
 		$this->numOfRelations = 0;
 
-		$this->setupTables($conn);
+		$this->setupTables();
+		$this->setupTempTables();
 		
 		// Counting no. of nodes
 		$sql = 'SELECT * FROM gdb_nodes;';
