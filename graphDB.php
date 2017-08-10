@@ -30,11 +30,21 @@ class Node
 		$this->labels= [];
 		$this->properties = array();
 
-		// Finding internal ID of the node
-		$id = mysqli_real_escape_string($conn,$this->ID);
-		$sql1 = 'SELECT id FROM '.$this->gdb->gdb_table_nodes.' WHERE name="'.$this->ID.'";';
-		$result = $conn->query($sql1);
-		$this->internalID = $result->fetch_assoc()['id'];
+		if($this->internalID) 
+		{
+			$id = mysqli_real_escape_string($conn,$this->internalID);
+			$sql1 = 'SELECT name FROM '.$this->gdb->gdb_table_nodes.' WHERE id='.$this->internalID.';';
+			$result = $conn->query($sql1);
+			$this->ID = $result->fetch_assoc()['name'];
+		}
+		else
+		{
+			// Finding internal ID of the node
+			$id = mysqli_real_escape_string($conn,$this->ID);
+			$sql1 = 'SELECT id FROM '.$this->gdb->gdb_table_nodes.' WHERE name="'.$this->ID.'";';
+			$result = $conn->query($sql1);
+			$this->internalID = $result->fetch_assoc()['id'];
+		}
 
 		// Loading labels
 		$sql2 = 'SELECT prop_value from '.$this->gdb->gdb_table_properties.' WHERE prop_type="l" AND e_id="'.$this->internalID.'";';
@@ -77,13 +87,22 @@ class Node
 	{
 		$this->gdb = $gdb;
 		$this->conn = $gdb->conn;
-		$this->ID = $id;
-		$this->internalID = "";
+		$this->internalID = False;
 		$this->labels = [];
 		$this->properties = array();
 		$this->outgoingRelations = [];
 		$this->incomingRelations = [];
 		$this->modifiedOn = "";
+
+		if(gettype($id)=="string") {
+			$this->ID = $id;
+		}
+		elseif (gettype($id)=="integer") {
+			$this->internalID = $id;
+		}
+		else {
+			$this->ID = $id;
+		}
 
 		// Load the properties of the Node from db
 		if ($load==True) {
@@ -506,9 +525,10 @@ class GQL
 
 	function search()
 	{
-
+		// Exploring all nodes in GQL
 		$filteredIDs = [];
-		foreach ($this->nodeList as $node ) 
+		$searchResult = [];
+		foreach ($this->nodeList as $node) 
 		{
 			$filPropIDs = [];
 			$filLabelIDs = [];
@@ -523,7 +543,7 @@ class GQL
 					array_push($filPropIDs, intval($data["e_id"]));
 				}
 				$filPropIDs = array_unique($filPropIDs);
-				var_dump($filPropIDs);
+				//var_dump($filPropIDs);
 			}
 
 
@@ -535,10 +555,23 @@ class GQL
 					array_push($filLabelIDs, intval($data["e_id"]));
 				}
 				$filLabelIDs = array_unique($filLabelIDs);
-				var_dump($filLabelIDs);
+				//var_dump($filLabelIDs);
 			}
+
+			$g = array_merge($filPropIDs,$filLabelIDs);
+			$g = array_unique($g);
+			array_push($filteredIDs, $g);
 		
 		}
+
+		// Generating real nodes using the filteredIDs array
+		foreach ($filteredIDs as $node) {
+			foreach ($node as $x) {
+				$g = new Node($this->gdb,$x);
+				array_push($searchResult, $g);	
+			}
+		}
+		return $searchResult;
 		
 	}
 }
