@@ -156,6 +156,7 @@ class Node
 	{
 		$a = new Relationship($this->gdb,$this,$node);
 		array_push($this->outgoingRelations, $a);
+		$this->gdb->numOfRelations += 1;
 		return $a;
 	}
 }
@@ -422,14 +423,18 @@ class GraphDB
 		$this->numOfNodes = 0;
 		$this->numOfRelations = 0;
 
+
+		// Creating the MySQL tables for storing graphs
 		$this->setupTables();
 		$this->setupTempTables();
+		
 		
 		// Counting no. of nodes
 		$sql = 'SELECT * FROM '.$this->gdb_table_nodes.';';
 		$result = $conn->query($sql);
 		$this->numOfNodes = intval($result->num_rows);
 
+		
 		// Counting no. of relations
 		$sql2 = 'SELECT DISTINCT e1_id,e2_id FROM '.$this->gdb_table_relations.';';
 		$result = $conn->query($sql2);
@@ -464,7 +469,7 @@ class GraphDB
 
 	public function GQL()
 	{
-		$a = new GQL($this->gdb);
+		$a = new GQL($this);
 		return $a;
 	}
 }
@@ -484,6 +489,7 @@ class GQL
 		$this->conn = $gdb->conn;
 		$this->gdb  = $gdb;
 		$conn = $this->conn;
+		$this->nodeList = [];
 	}
 
 
@@ -491,28 +497,104 @@ class GQL
 	function createNode()
 	{
 		$conn = $this->conn;
-		$a = new Node($this->gdb);
-	}
-
-
-
-	function relationship() 
-	{
-		$conn = $this->conn;
-		$a = new Relationship($this->gdb);
-
+		$a = new GQLNode($this->gdb);
+		array_push($this->nodeList, $a);
+		return $this->nodeList[sizeof($this->nodeList)-1];
 	}
 
 
 
 	function search()
 	{
-		// Do the searching here
+
+		$filteredIDs = [];
+		foreach ($this->nodeList as $node ) 
+		{
+			$filPropIDs = [];
+			// Checking for properties
+			foreach ($node->properties as $key => $value) 
+			{
+				$sql = 'SELECT e_id FROM '.$this->gdb->gdb_table_properties.' WHERE prop_name="'.$key.'" AND prop_value="'.$value.'";';
+				$result = $this->conn->query($sql);
+				while ($data = $result->fetch_assoc()) {
+					array_push($filPropIDs, intval($data["e_id"]));
+				}
+				$filPropIDs = array_unique($filPropIDs);
+				var_dump($filPropIDs);
+			}
+		
+		}
+		
 	}
 }
 
 
 
+
+
+class GQLNode
+{
+	
+	function __construct()
+	{
+		$this->properties = array();
+		$this->outgoingRelations = [];
+		$this->labels = [];
+	}
+
+	function setLabel($label)
+	{
+		array_push($this->labels, $label);
+		return $this;
+	}
+
+	function setProperty($key,$value) 
+	{
+		$this->properties[$key] = $value;
+		return $this;
+	}
+
+	function getLabel()
+	{
+		return $this->labels;
+	}
+
+	function getProperty($key)
+	{
+		return $this->properties[$key];
+	}
+
+	function connectTo($node) 
+	{
+		$a = new GQLRelationship($this,$node);
+		array_push($this->outgoingRelations, $a);
+		return $this->outgoingRelations[sizeof($this->outgoingRelations)-1];
+	}
+}
+
+
+
+class GQLRelationship
+{
+	
+	function __construct($node1,$node2)
+	{
+		$this->properties = array();
+		$this->labels = [];
+	}
+
+	function setLabel($label)
+	{
+		array_push($this->labels, $label);
+		return $this;
+	}
+
+	function setProperty($key,$value)
+	{
+		$this->properties[$key] = $value;
+		return $this;
+	}
+}
 
 
 ?>
