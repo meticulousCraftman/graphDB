@@ -511,6 +511,9 @@ class GQL
 		foreach ($this->nodeList as $node ) 
 		{
 			$filPropIDs = [];
+			$filLabelIDs = [];
+			
+
 			// Checking for properties
 			foreach ($node->properties as $key => $value) 
 			{
@@ -521,6 +524,18 @@ class GQL
 				}
 				$filPropIDs = array_unique($filPropIDs);
 				var_dump($filPropIDs);
+			}
+
+
+			// Checking for labels
+			foreach ($node->labels as $label) {
+				$sql2 = 'SELECT e_id FROM '.$this->gdb->gdb_table_properties.' WHERE prop_type="l" AND prop_value="'.$label.'";';
+				$result = $this->conn->query($sql2);
+				while ($data = $result->fetch_assoc()) {
+					array_push($filLabelIDs, intval($data["e_id"]));
+				}
+				$filLabelIDs = array_unique($filLabelIDs);
+				var_dump($filLabelIDs);
 			}
 		
 		}
