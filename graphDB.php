@@ -532,37 +532,121 @@ class GQL
 		{
 			$filPropIDs = [];
 			$filLabelIDs = [];
-			
+			$filRelPropIDs = [];
+			$filRelLabelIDs = [];
+
+			$possibleNodeIDs = [];
+			$g = [];
 
 			// Checking for properties
-			foreach ($node->properties as $key => $value) 
+			if(sizeof($node->properties)>0) 
 			{
-				$sql = 'SELECT e_id FROM '.$this->gdb->gdb_table_properties.' WHERE prop_name="'.$key.'" AND prop_value="'.$value.'";';
-				$result = $this->conn->query($sql);
-				while ($data = $result->fetch_assoc()) {
-					array_push($filPropIDs, intval($data["e_id"]));
+				foreach ($node->properties as $key => $value) 
+				{
+					$sql = 'SELECT e_id FROM '.$this->gdb->gdb_table_properties.' WHERE prop_name="'.$key.'" AND prop_value="'.$value.'";';
+					$result = $this->conn->query($sql);
+					while ($data = $result->fetch_assoc()) {
+						array_push($filPropIDs, intval($data["e_id"]));
+					}
+					$filPropIDs = array_unique($filPropIDs);
 				}
-				$filPropIDs = array_unique($filPropIDs);
-				//var_dump($filPropIDs);
+				array_push($possibleNodeIDs, $filPropIDs);
 			}
 
 
 			// Checking for labels
-			foreach ($node->labels as $label) {
-				$sql2 = 'SELECT e_id FROM '.$this->gdb->gdb_table_properties.' WHERE prop_type="l" AND prop_value="'.$label.'";';
-				$result = $this->conn->query($sql2);
-				while ($data = $result->fetch_assoc()) {
-					array_push($filLabelIDs, intval($data["e_id"]));
+			if(sizeof($node->labels)>0) 
+			{
+				foreach ($node->labels as $label) 
+				{
+					$sql2 = 'SELECT e_id FROM '.$this->gdb->gdb_table_properties.' WHERE prop_type="l" AND prop_value="'.$label.'";';
+					$result = $this->conn->query($sql2);
+					while ($data = $result->fetch_assoc()) {
+						array_push($filLabelIDs, intval($data["e_id"]));
+					}
+					$filLabelIDs = array_unique($filLabelIDs);
 				}
-				$filLabelIDs = array_unique($filLabelIDs);
-				//var_dump($filLabelIDs);
+				array_push($possibleNodeIDs, $filLabelIDs);
 			}
 
-			$g = array_merge($filPropIDs,$filLabelIDs);
-			$g = array_unique($g);
+
+			// Checking for relationships
+			foreach ($node->outgoingRelations as $rel) 
+			{
+				
+
+				// Checking realtionship properties
+				if(sizeof($rel->properties)>0)
+				{
+					foreach ($rel->properties as $key => $value) 
+					{
+						$sql1 = 'SELECT e1_id FROM '.$this->gdb->gdb_table_relations.' WHERE rel_name="'.$key.'" AND rel_value="'.$value.'";';
+						$result = $this->conn->query($sql1);
+						while ($data = $result->fetch_assoc()) {
+							array_push($filRelPropIDs, intval($data['e1_id']));
+						}
+						$filRelPropIDs = array_unique($filRelPropIDs);
+					}
+					array_push($possibleNodeIDs, $filRelPropIDs);
+				}
+
+
+
+				// Checking relationship labels
+				if(sizeof($rel->labels)>0)
+				{
+					foreach ($rel->labels as $rellabel) 
+					{
+						$sql2 = 'SELECT e1_id FROM '.$this->gdb->gdb_table_relations.' WHERE rel_type="l" AND rel_value="'.$rellabel.'";';
+						$result = $this->conn->query($sql2);
+						while ($data = $result->fetch_assoc()) {
+							array_push($filRelLabelIDs, intval($data['e1_id']));
+						}
+						$filRelLabelIDs = array_unique($filRelLabelIDs);
+					}
+					array_push($possibleNodeIDs, $filRelLabelIDs);
+				}
+			}
+
+
+			// Doing intersection of IDs
+			if(sizeof($possibleNodeIDs)==1)
+			{
+				$g = $possibleNodeIDs[0];
+			}
+			elseif (sizeof($possibleNodeIDs)==2) 
+			{
+				$g = array_intersect($possibleNodeIDs[0], $possibleNodeIDs[1]);
+			}
+			elseif (sizeof($possibleNodeIDs)==3) 
+			{
+				$g = array_intersect($possibleNodeIDs[0], $possibleNodeIDs[1],$possibleNodeIDs[2]);
+			}
+			elseif (sizeof($possibleNodeIDs)==4)
+			{
+				$g = array_intersect($possibleNodeIDs[0], $possibleNodeIDs[1], $possibleNodeIDs[2], $possibleNodeIDs[3]);
+			}
+
 			array_push($filteredIDs, $g);
+
+			spit();
+			spit("Node properties : ");
+			var_dump($filPropIDs);
+			spit("Node Labels : ");
+			var_dump($filLabelIDs);
+			spit("Relationship properties : ");
+			var_dump($filRelPropIDs);
+			spit("Relationship Labels");
+			var_dump($filRelLabelIDs);
+			spit("Value of g is : ");
+			var_dump($g);
+			spit();
 		
 		}
+
+		spit();
+		spit("Value of filteredIDs : ");
+		var_dump($filteredIDs);
 
 		// Generating real nodes using the filteredIDs array
 		foreach ($filteredIDs as $node) {
@@ -571,6 +655,7 @@ class GQL
 				array_push($searchResult, $g);	
 			}
 		}
+
 		return $searchResult;
 		
 	}
